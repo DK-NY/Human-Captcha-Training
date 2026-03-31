@@ -19,7 +19,7 @@
         border: 1px solid #ccc;
         margin: 20px;
     }
-    input {
+    input, select {
         padding: 8px;
         font-size: 16px;
     }
@@ -28,33 +28,53 @@
         margin: 5px;
         cursor: pointer;
     }
+    #trainingSection {
+        display: none;
+    }
 </style>
 </head>
 <body>
 
 <h2>Handwritten CAPTCHA Training (Case-Insensitive)</h2>
 
-<canvas id="captchaCanvas" width="260" height="100"></canvas>
+<!-- User Name Input -->
+<div id="userSection">
+    <input type="text" id="userName" placeholder="Enter your name">
+    <button onclick="startTraining()">Start Training</button>
+</div>
 
-<br>
+<!-- Training Section -->
+<div id="trainingSection">
+    <canvas id="captchaCanvas" width="260" height="100"></canvas>
+    <br>
+    <input type="text" id="userInput" placeholder="Enter CAPTCHA text">
+    <br>
+    <button onclick="checkAnswer()">Submit</button>
+    <button onclick="generateCaptcha()">Next</button>
+    <p id="result"></p>
+    <br>
+    <label>Difficulty:</label>
+    <select id="difficulty">
+        <option value="1">Easy</option>
+        <option value="3">Intermediate</option>
+        <option value="5">Hard</option>
+    </select>
+</div>
 
-<input type="text" id="userInput" placeholder="Enter text">
-<br>
-
-<button onclick="checkAnswer()">Submit</button>
-<button onclick="generateCaptcha()">Next</button>
-
-<p id="result"></p>
-
-<br>
-
-<label>Difficulty:</label>
-<input type="range" id="difficulty" min="1" max="5" value="2">
+<!-- Analytics Section -->
+<div id="analyticsSection" style="display:none;">
+    <h3>Training Analytics</h3>
+    <p id="analytics"></p>
+</div>
 
 <script>
-const fonts = ["Indie Flower", "Patrick Hand", "Caveat"]; // Handwritten style fonts
-const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // Only uppercase letters + digits
+const fonts = ["Indie Flower", "Patrick Hand", "Caveat"];
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 let currentText = "";
+let userName = "";
+let trials = 0;
+let correctCount = 0;
+let maxTrials = 20;
 
 // Generate random text
 function generateText(length = 5) {
@@ -65,11 +85,11 @@ function generateText(length = 5) {
     return text;
 }
 
-// Draw CAPTCHA (handwritten fonts)
+// Draw CAPTCHA
 function generateCaptcha() {
     const canvas = document.getElementById("captchaCanvas");
     const ctx = canvas.getContext("2d");
-    const difficulty = document.getElementById("difficulty").value;
+    const difficulty = parseInt(document.getElementById("difficulty").value);
 
     currentText = generateText();
 
@@ -78,39 +98,29 @@ function generateCaptcha() {
     inputBox.value = "";
     document.getElementById("result").innerHTML = "";
 
-    // Clear canvas and draw background
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     let x = 20;
-
     for (let i = 0; i < currentText.length; i++) {
         const char = currentText[i];
-        const charToDraw = char.toUpperCase(); // Ensure uppercase visually
-
-        ctx.save();
-
-        // Use a random handwritten font
         const fontFamily = fonts[Math.floor(Math.random() * fonts.length)];
         const fontSize = 30 + Math.random() * 15;
         ctx.font = `${fontSize}px "${fontFamily}"`;
 
-        // Random rotation and vertical displacement
         const angle = (Math.random() - 0.5) * difficulty * 0.6;
         const y = 50 + (Math.random() - 0.5) * 10;
 
+        ctx.save();
         ctx.translate(x, y);
         ctx.rotate(angle);
-
         ctx.fillStyle = `rgb(${Math.random()*100+50},${Math.random()*100+50},${Math.random()*100+50})`;
-        ctx.fillText(charToDraw, 0, 0);
-
+        ctx.fillText(char, 0, 0);
         ctx.restore();
         x += fontSize * 0.9;
     }
 
-    // Add random occluding lines for complexity
     for (let i = 0; i < difficulty * 2; i++) {
         ctx.strokeStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.7)`;
         ctx.beginPath();
@@ -120,30 +130,59 @@ function generateCaptcha() {
     }
 }
 
-// Check answer (case-insensitive)
+// Check user answer
 function checkAnswer() {
-    const userInput = document.getElementById("userInput").value.toUpperCase(); // Convert input to uppercase
+    const userInput = document.getElementById("userInput").value.toUpperCase();
     const result = document.getElementById("result");
 
+    trials++;
     if (userInput === currentText) {
         result.innerHTML = "✅ Correct";
         result.style.color = "green";
-
-        // Auto generate next CAPTCHA after 500ms delay
-        setTimeout(generateCaptcha, 500);
+        correctCount++;
     } else {
         result.innerHTML = `❌ Incorrect (Answer: ${currentText})`;
         result.style.color = "red";
     }
+
+    if (trials >= maxTrials) {
+        showAnalytics();
+    } else {
+        setTimeout(generateCaptcha, 500);
+    }
 }
 
-// Hide feedback when user types
+// Hide feedback when typing
 document.getElementById("userInput").addEventListener("input", function() {
     document.getElementById("result").innerHTML = "";
 });
 
-// Initialize first CAPTCHA
-generateCaptcha();
+// Start training after entering user name
+function startTraining() {
+    const nameInput = document.getElementById("userName").value.trim();
+    if (nameInput === "") {
+        alert("Please enter your name to start.");
+        return;
+    }
+    userName = nameInput;
+    document.getElementById("userSection").style.display = "none";
+    document.getElementById("trainingSection").style.display = "block";
+    generateCaptcha();
+}
+
+// Show analytics after training
+function showAnalytics() {
+    document.getElementById("trainingSection").style.display = "none";
+    const accuracy = ((correctCount / trials) * 100).toFixed(1);
+    document.getElementById("analytics").innerHTML = `
+        User: ${userName}<br>
+        Total Trials: ${trials}<br>
+        Correct: ${correctCount}<br>
+        Incorrect: ${trials - correctCount}<br>
+        Accuracy: ${accuracy}%
+    `;
+    document.getElementById("analyticsSection").style.display = "block";
+}
 </script>
 
 </body>
