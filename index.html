@@ -30,6 +30,10 @@
     #trainingSection, #analyticsSection {
         display: none;
     }
+    #analyticsSection ul {
+        list-style-type: none;
+        padding-left: 0;
+    }
 </style>
 </head>
 <body>
@@ -39,7 +43,7 @@
 <!-- User Name Input -->
 <div id="userSection">
     <input type="text" id="userName" placeholder="Enter your name">
-    <button onclick="startTraining()">Start Training</button>
+    <button id="startBtn" onclick="startTraining()">Start Training</button>
 </div>
 
 <!-- Training Section -->
@@ -48,7 +52,7 @@
     <br>
     <input type="text" id="userInput" placeholder="Enter CAPTCHA text">
     <br>
-    <button onclick="checkAnswer()">Submit</button>
+    <button id="submitBtn" onclick="checkAnswer()">Submit</button>
     <button onclick="generateCaptcha()">Next</button>
     <p id="result"></p>
     <br>
@@ -64,17 +68,21 @@
 <div id="analyticsSection">
     <h3>Training Analytics</h3>
     <p id="analytics"></p>
+    <h4>Review Incorrect Answers:</h4>
+    <ul id="incorrectList"></ul>
 </div>
 
 <script>
 const fonts = ["Indie Flower", "Patrick Hand", "Caveat"];
-const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+// Removed confusing characters: 0, O, I, l, 1
+const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 let currentText = "";
 let userName = "";
 let trials = 0;
 let correctCount = 0;
 const maxTrials = 20;
+let incorrectAnswers = [];
 
 // Generate random text
 function generateText(length = 5) {
@@ -93,7 +101,6 @@ function generateCaptcha() {
 
     currentText = generateText();
 
-    // Clear input and feedback
     const inputBox = document.getElementById("userInput");
     inputBox.value = "";
     document.getElementById("result").innerHTML = "";
@@ -121,7 +128,6 @@ function generateCaptcha() {
         x += fontSize * 0.9;
     }
 
-    // Random occluding lines
     for (let i = 0; i < difficulty * 2; i++) {
         ctx.strokeStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.7)`;
         ctx.beginPath();
@@ -144,6 +150,7 @@ function checkAnswer() {
     } else {
         result.innerHTML = `❌ Incorrect (Answer: ${currentText})`;
         result.style.color = "red";
+        incorrectAnswers.push(currentText);
     }
 
     if (trials >= maxTrials) {
@@ -158,7 +165,7 @@ document.getElementById("userInput").addEventListener("input", function() {
     document.getElementById("result").innerHTML = "";
 });
 
-// Start training after entering user name
+// Start training
 function startTraining() {
     const nameInput = document.getElementById("userName").value.trim();
     if (!nameInput) {
@@ -171,7 +178,7 @@ function startTraining() {
     generateCaptcha();
 }
 
-// Show analytics
+// Show analytics and incorrect answers
 function showAnalytics() {
     document.getElementById("trainingSection").style.display = "none";
     const accuracy = ((correctCount / trials) * 100).toFixed(1);
@@ -182,8 +189,26 @@ function showAnalytics() {
         Incorrect: ${trials - correctCount}<br>
         Accuracy: ${accuracy}%
     `;
+
+    const ul = document.getElementById("incorrectList");
+    ul.innerHTML = "";
+    incorrectAnswers.forEach(ans => {
+        const li = document.createElement("li");
+        li.textContent = ans;
+        ul.appendChild(li);
+    });
+
     document.getElementById("analyticsSection").style.display = "block";
 }
+
+// Keyboard Enter key support
+document.getElementById("userName").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") document.getElementById("startBtn").click();
+});
+
+document.getElementById("userInput").addEventListener("keydown", function(e) {
+    if (e.key === "Enter") document.getElementById("submitBtn").click();
+});
 </script>
 
 </body>
