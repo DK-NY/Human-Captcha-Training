@@ -53,7 +53,7 @@
 
 <script>
 const fonts = ["Indie Flower", "Patrick Hand", "Caveat"]; // Handwritten style fonts
-const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // Only uppercase + digits
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // Only uppercase letters + digits
 let currentText = "";
 
 // Generate random text
@@ -74,10 +74,11 @@ function generateCaptcha() {
     currentText = generateText();
 
     // Clear input and feedback
-    document.getElementById("userInput").value = "";
+    const inputBox = document.getElementById("userInput");
+    inputBox.value = "";
     document.getElementById("result").innerHTML = "";
 
-    // Background
+    // Clear canvas and draw background
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -86,6 +87,7 @@ function generateCaptcha() {
 
     for (let i = 0; i < currentText.length; i++) {
         const char = currentText[i];
+        const charToDraw = char.toUpperCase(); // Ensure uppercase visually
 
         ctx.save();
 
@@ -102,7 +104,7 @@ function generateCaptcha() {
         ctx.rotate(angle);
 
         ctx.fillStyle = `rgb(${Math.random()*100+50},${Math.random()*100+50},${Math.random()*100+50})`;
-        ctx.fillText(char, 0, 0);
+        ctx.fillText(charToDraw, 0, 0);
 
         ctx.restore();
         x += fontSize * 0.9;
@@ -140,7 +142,7 @@ document.getElementById("userInput").addEventListener("input", function() {
     document.getElementById("result").innerHTML = "";
 });
 
-// Initialize
+// Initialize first CAPTCHA
 generateCaptcha();
 </script>
 
