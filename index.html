@@ -42,27 +42,44 @@
 
 <!-- User Name Input -->
 <div id="userSection">
-    <input type="text" id="userName" placeholder="Enter your name">
-    <button id="startBtn" onclick="startTraining()">Start Training</button>
+  <form id="userForm">
+    <input type="text" id="userName" placeholder="Enter your name" autocomplete="off">
+    <button type="submit">Start Training</button>
+  </form>
 </div>
 
 <!-- Training Section -->
 <div id="trainingSection">
-    <canvas id="captchaCanvas" width="260" height="100"></canvas>
-    <br>
-    <input type="text" id="userInput" placeholder="Enter CAPTCHA text">
-    <br>
-    <button id="submitBtn" onclick="checkAnswer()">Submit</button>
-    <button onclick="generateCaptcha()">Next</button>
-    <p id="result"></p>
-    <br>
-    <label>Difficulty:</label>
-    <select id="difficulty">
-        <option value="1">Easy</option>
-        <option value="3">Intermediate</option>
-        <option value="5">Hard</option>
-    </select>
+  <canvas id="captchaCanvas" width="260" height="100"></canvas>
+  <br>
+  <form id="captchaForm">
+    <input type="text" id="userInput" placeholder="Enter CAPTCHA text" autocomplete="off">
+    <button type="submit">Submit</button>
+  </form>
+  <button onclick="generateCaptcha()">Next</button>
+  <p id="result"></p>
+  <br>
+  <label>Difficulty:</label>
+  <select id="difficulty">
+    <option value="1">Easy</option>
+    <option value="3">Intermediate</option>
+    <option value="5">Hard</option>
+  </select>
 </div>
+
+<script>
+// Handle Enter key for user name
+document.getElementById("userForm").addEventListener("submit", function(e) {
+    e.preventDefault(); // prevent page reload
+    startTraining();
+});
+
+// Handle Enter key for CAPTCHA input
+document.getElementById("captchaForm").addEventListener("submit", function(e) {
+    e.preventDefault(); // prevent page reload
+    checkAnswer();
+});
+</script>
 
 <!-- Analytics Section -->
 <div id="analyticsSection">
