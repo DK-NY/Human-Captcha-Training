@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Handwritten CAPTCHA Training</title>
 
-<!-- Handwritten Web Fonts (Google) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Indie+Flower&family=Patrick+Hand&display=swap" rel="stylesheet">
@@ -28,7 +27,7 @@
         margin: 5px;
         cursor: pointer;
     }
-    #trainingSection {
+    #trainingSection, #analyticsSection {
         display: none;
     }
 </style>
@@ -62,7 +61,7 @@
 </div>
 
 <!-- Analytics Section -->
-<div id="analyticsSection" style="display:none;">
+<div id="analyticsSection">
     <h3>Training Analytics</h3>
     <p id="analytics"></p>
 </div>
@@ -70,11 +69,12 @@
 <script>
 const fonts = ["Indie Flower", "Patrick Hand", "Caveat"];
 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
 let currentText = "";
 let userName = "";
 let trials = 0;
 let correctCount = 0;
-let maxTrials = 20;
+const maxTrials = 20;
 
 // Generate random text
 function generateText(length = 5) {
@@ -121,6 +121,7 @@ function generateCaptcha() {
         x += fontSize * 0.9;
     }
 
+    // Random occluding lines
     for (let i = 0; i < difficulty * 2; i++) {
         ctx.strokeStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.7)`;
         ctx.beginPath();
@@ -160,7 +161,7 @@ document.getElementById("userInput").addEventListener("input", function() {
 // Start training after entering user name
 function startTraining() {
     const nameInput = document.getElementById("userName").value.trim();
-    if (nameInput === "") {
+    if (!nameInput) {
         alert("Please enter your name to start.");
         return;
     }
@@ -170,7 +171,7 @@ function startTraining() {
     generateCaptcha();
 }
 
-// Show analytics after training
+// Show analytics
 function showAnalytics() {
     document.getElementById("trainingSection").style.display = "none";
     const accuracy = ((correctCount / trials) * 100).toFixed(1);
