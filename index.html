@@ -2,10 +2,16 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>CAPTCHA Training System</title>
+<title>Handwritten CAPTCHA Training</title>
+
+<!-- Handwritten Web Fonts (Google) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Indie+Flower&family=Patrick+Hand&display=swap" rel="stylesheet">
+
 <style>
     body {
-        font-family: Arial;
+        font-family: Arial, sans-serif;
         text-align: center;
         margin-top: 40px;
     }
@@ -26,9 +32,9 @@
 </head>
 <body>
 
-<h2>CAPTCHA Recognition Training</h2>
+<h2>Handwritten CAPTCHA Training</h2>
 
-<canvas id="captchaCanvas" width="220" height="80"></canvas>
+<canvas id="captchaCanvas" width="260" height="100"></canvas>
 
 <br>
 
@@ -46,6 +52,7 @@
 <input type="range" id="difficulty" min="1" max="5" value="2">
 
 <script>
+const fonts = ["Indie Flower", "Patrick Hand", "Caveat"]; // Handwritten style fonts
 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 let currentText = "";
 
@@ -58,7 +65,7 @@ function generateText(length = 5) {
     return text;
 }
 
-// Draw CAPTCHA
+// Draw CAPTCHA (handwritten fonts)
 function generateCaptcha() {
     const canvas = document.getElementById("captchaCanvas");
     const ctx = canvas.getContext("2d");
@@ -69,11 +76,14 @@ function generateCaptcha() {
     // Clear
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Clear input and feedback
+    document.getElementById("userInput").value = "";
+    document.getElementById("result").innerHTML = "";
+
     // Background
-    ctx.fillStyle = "#f5f5f5";
+    ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw text with distortion
     let x = 20;
 
     for (let i = 0; i < currentText.length; i++) {
@@ -81,46 +91,33 @@ function generateCaptcha() {
 
         ctx.save();
 
-        // Random font
-        const fontSize = 30 + Math.random() * 10;
-        ctx.font = fontSize + "px Arial";
+        // Use a random handwritten font
+        const fontFamily = fonts[Math.floor(Math.random() * fonts.length)];
+        const fontSize = 30 + Math.random() * 15;
+        ctx.font = `${fontSize}px "${fontFamily}"`;
 
-        // Random rotation (difficulty scaled)
-        const angle = (Math.random() - 0.5) * difficulty * 0.5;
-        ctx.translate(x, 50);
+        // Random rotation and vertical displacement
+        const angle = (Math.random() - 0.5) * difficulty * 0.6;
+        const y = 50 + (Math.random() - 0.5) * 10;
+
+        ctx.translate(x, y);
         ctx.rotate(angle);
 
-        ctx.fillStyle = randomColor(0, 150);
+        ctx.fillStyle = `rgb(${Math.random()*100+50},${Math.random()*100+50},${Math.random()*100+50})`;
         ctx.fillText(char, 0, 0);
 
         ctx.restore();
-
-        x += 30;
+        x += fontSize * 0.9;
     }
 
-    // Add noise lines
+    // Add random occluding lines for complexity
     for (let i = 0; i < difficulty * 2; i++) {
-        ctx.strokeStyle = randomColor(0, 200);
+        ctx.strokeStyle = `rgba(${Math.random()*255},${Math.random()*255},${Math.random()*255},0.7)`;
         ctx.beginPath();
-        ctx.moveTo(rand(0, 220), rand(0, 80));
-        ctx.lineTo(rand(0, 220), rand(0, 80));
+        ctx.moveTo(Math.random()*260, Math.random()*100);
+        ctx.lineTo(Math.random()*260, Math.random()*100);
         ctx.stroke();
     }
-
-    // Add dots noise
-    for (let i = 0; i < difficulty * 100; i++) {
-        ctx.fillStyle = randomColor(0, 255);
-        ctx.fillRect(rand(0, 220), rand(0, 80), 1, 1);
-    }
-}
-
-// Random helpers
-function rand(min, max) {
-    return Math.floor(Math.random() * (max - min) + min);
-}
-
-function randomColor(min, max) {
-    return `rgb(${rand(min,max)},${rand(min,max)},${rand(min,max)})`;
 }
 
 // Check answer
@@ -131,11 +128,19 @@ function checkAnswer() {
     if (userInput === currentText) {
         result.innerHTML = "✅ Correct";
         result.style.color = "green";
+
+        // Auto generate next CAPTCHA after 500ms delay for feedback
+        setTimeout(generateCaptcha, 500);
     } else {
         result.innerHTML = `❌ Incorrect (Answer: ${currentText})`;
         result.style.color = "red";
     }
 }
+
+// Hide feedback when user types
+document.getElementById("userInput").addEventListener("input", function() {
+    document.getElementById("result").innerHTML = "";
+});
 
 // Initialize
 generateCaptcha();
