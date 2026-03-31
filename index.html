@@ -98,9 +98,10 @@ let userName = "";
 let trials = 0;
 let correctCount = 0;
 const maxTrials = 20;
-let incorrectAnswers = []; // Array of objects: {userInput, correctAnswer}
+// Store objects with user input and correct answer
+let incorrectAnswers = [];
 
-// Generate random text
+// Generate random CAPTCHA text
 function generateText(length = 5) {
     let text = "";
     for (let i = 0; i < length; i++) {
@@ -117,8 +118,7 @@ function generateCaptcha() {
 
     currentText = generateText();
 
-    const inputBox = document.getElementById("userInput");
-    inputBox.value = "";
+    document.getElementById("userInput").value = "";
     document.getElementById("result").innerHTML = "";
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -155,8 +155,10 @@ function generateCaptcha() {
 
 // Check user answer
 function checkAnswer() {
-    const userInput = document.getElementById("userInput").value.toUpperCase();
+    const userInput = document.getElementById("userInput").value.toUpperCase().trim();
     const result = document.getElementById("result");
+
+    if (!userInput) return;
 
     trials++;
     if (userInput === currentText) {
@@ -176,11 +178,6 @@ function checkAnswer() {
     }
 }
 
-// Hide feedback when typing
-document.getElementById("userInput").addEventListener("input", function() {
-    document.getElementById("result").innerHTML = "";
-});
-
 // Start training
 function startTraining() {
     const nameInput = document.getElementById("userName").value.trim();
@@ -194,9 +191,10 @@ function startTraining() {
     generateCaptcha();
 }
 
-// Show analytics and incorrect answers
+// Show analytics with incorrect answers
 function showAnalytics() {
     document.getElementById("trainingSection").style.display = "none";
+
     const accuracy = ((correctCount / trials) * 100).toFixed(1);
     document.getElementById("analytics").innerHTML = `
         User: ${userName}<br>
@@ -208,14 +206,23 @@ function showAnalytics() {
 
     const ul = document.getElementById("incorrectList");
     ul.innerHTML = "";
-    incorrectAnswers.forEach(ans => {
-        const li = document.createElement("li");
-        li.textContent = `Your input: ${ans.userInput} | Correct: ${ans.correctAnswer}`;
-        ul.appendChild(li);
-    });
+    if (incorrectAnswers.length === 0) {
+        ul.innerHTML = "<li>All answers were correct!</li>";
+    } else {
+        incorrectAnswers.forEach(item => {
+            const li = document.createElement("li");
+            li.textContent = `Your input: ${item.userInput} | Correct: ${item.correctAnswer}`;
+            ul.appendChild(li);
+        });
+    }
 
     document.getElementById("analyticsSection").style.display = "block";
 }
+
+// Hide feedback when typing
+document.getElementById("userInput").addEventListener("input", function() {
+    document.getElementById("result").innerHTML = "";
+});
 
 // Keyboard Enter key support using forms
 document.getElementById("userForm").addEventListener("submit", function(e) {
