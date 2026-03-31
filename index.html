@@ -32,7 +32,7 @@
 </head>
 <body>
 
-<h2>Handwritten CAPTCHA Training</h2>
+<h2>Handwritten CAPTCHA Training (Case-Insensitive)</h2>
 
 <canvas id="captchaCanvas" width="260" height="100"></canvas>
 
@@ -53,7 +53,7 @@
 
 <script>
 const fonts = ["Indie Flower", "Patrick Hand", "Caveat"]; // Handwritten style fonts
-const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // Only uppercase + digits
 let currentText = "";
 
 // Generate random text
@@ -73,14 +73,12 @@ function generateCaptcha() {
 
     currentText = generateText();
 
-    // Clear
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     // Clear input and feedback
     document.getElementById("userInput").value = "";
     document.getElementById("result").innerHTML = "";
 
     // Background
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = "#fff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -120,16 +118,16 @@ function generateCaptcha() {
     }
 }
 
-// Check answer
+// Check answer (case-insensitive)
 function checkAnswer() {
-    const userInput = document.getElementById("userInput").value;
+    const userInput = document.getElementById("userInput").value.toUpperCase(); // Convert input to uppercase
     const result = document.getElementById("result");
 
     if (userInput === currentText) {
         result.innerHTML = "✅ Correct";
         result.style.color = "green";
 
-        // Auto generate next CAPTCHA after 500ms delay for feedback
+        // Auto generate next CAPTCHA after 500ms delay
         setTimeout(generateCaptcha, 500);
     } else {
         result.innerHTML = `❌ Incorrect (Answer: ${currentText})`;
